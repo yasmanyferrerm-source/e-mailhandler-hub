@@ -1,0 +1,12 @@
+node_modules/
+.expo/
+dist/
+web-build/
+ios/
+android/
+*.log
+.env
+.env.local
+src-tauri/target/
+src-tauri/gen/
+.DS_Store
