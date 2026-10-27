@@ -3,7 +3,7 @@ import { refreshAsync } from 'expo-auth-session';
 import { discovery } from 'expo-auth-session/providers/google';
 import { AuthExpiredError, fetchProfileEmail, GmailSource, type MailSource } from '../gmail/api';
 import { DEMO_ACCOUNTS, DemoSource } from '../gmail/demo';
-import { ACCOUNT_COLORS, platformClientId } from '../lib/config';
+import { ACCOUNT_COLORS, desktopClient, isDesktop, platformClientId } from '../lib/config';
 import { getJSON, removeItem, setJSON } from '../lib/storage';
 import type { Account, MailDetail, MailSummary, OutgoingMail, SmartView, Tokens } from '../types';
 
@@ -53,10 +53,17 @@ async function validToken(accountId: string): Promise<string> {
   const tokens = await getJSON<Tokens | null>(tokenKey(accountId), null);
   if (!tokens) throw new AuthExpiredError(accountId);
   if (tokens.expiresAt - 60_000 > Date.now()) return tokens.accessToken;
-  // Only installed apps (iOS/Android) get a refresh token. On web the user
-  // reconnects the account when its one-hour token runs out.
+  // Only installed apps (iOS, Android, desktop) get a refresh token. On web
+  // the user reconnects the account when its one-hour token runs out.
   if (!tokens.refreshToken || !platformClientId) throw new AuthExpiredError(accountId);
-  const fresh = await refreshAsync({ clientId: platformClientId, refreshToken: tokens.refreshToken }, discovery);
+  const fresh = await refreshAsync(
+    {
+      clientId: platformClientId,
+      clientSecret: isDesktop ? desktopClient.clientSecret : undefined,
+      refreshToken: tokens.refreshToken,
+    },
+    discovery,
+  );
   const next: Tokens = {
     accessToken: fresh.accessToken,
     refreshToken: fresh.refreshToken ?? tokens.refreshToken,

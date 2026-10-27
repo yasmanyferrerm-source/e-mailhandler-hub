@@ -58,28 +58,30 @@ Demo mode works without this. To connect real Gmail accounts you need your own G
    - **Web application**: add `http://localhost:8081` (and your deployed web address later) under *Authorized JavaScript origins* and *Authorized redirect URIs*.
    - **iOS**: bundle ID `com.mailhub.app`.
    - **Android**: package name `com.mailhub.app`, plus the SHA-1 of your signing key (`npx eas-cli credentials` shows it).
+   - **Desktop app**: no settings needed. Google shows a client ID *and* a client secret; copy both.
 5. Copy `.env.example` to `.env` and paste the client IDs:
 
    ```
    EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=...apps.googleusercontent.com
    EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...apps.googleusercontent.com
    EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=...apps.googleusercontent.com
+   EXPO_PUBLIC_GOOGLE_DESKTOP_CLIENT_ID=...apps.googleusercontent.com
+   EXPO_PUBLIC_GOOGLE_DESKTOP_CLIENT_SECRET=GOCSPX-...
    ```
 
 6. Restart `npm run web` and click **Connect Gmail**. Repeat **Add Gmail account** for each extra account.
 
-Client IDs are not secrets, but `.env` is git-ignored anyway. Never put a client *secret* in this app.
+Client IDs are not secrets, but `.env` is git-ignored anyway. The one exception to "no secrets in the app" is the **Desktop app** client secret: Google requires it for desktop sign-in and [documents it as not confidential](https://developers.google.com/identity/protocols/oauth2/native-app) for installed apps. Never put a *Web application* client's secret in this app.
 
 ### Good to know
 
 - **Web stays signed in for about an hour.** Google gives browser apps a one-hour token with no refresh token. When it runs out, the account shows "Sign-in expired" and one tap on **Reconnect** fixes it. iPhone and Android get a refresh token and stay signed in.
 - **Mobile sign-in needs a development build**, not Expo Go, because Google redirects back to the app's own bundle ID: `npx expo run:ios` / `npx expo run:android`, or `npx eas-cli build --profile development`.
-- **Desktop sign-in is not done yet.** Google blocks sign-in inside embedded app windows, so the desktop app needs to open the system browser and catch the redirect on a local port. Until then, the desktop app runs demo mode, and real accounts work in the web and mobile apps.
+- **Desktop signs in through your normal browser.** Google blocks sign-in inside app windows, so the desktop app opens your default browser, then catches Google's answer on a one-off `127.0.0.1` port. Desktop gets a refresh token and stays signed in.
 - **Publishing to other people** needs Google to verify the app, because `gmail.modify` is a restricted scope. For your own accounts, Testing mode with yourself as a test user is enough.
 
 ## Roadmap
 
-- Desktop sign-in through the system browser
 - Swipe to archive or snooze on mobile
 - Snooze and reminders
 - Thread view (whole conversation instead of single messages)
