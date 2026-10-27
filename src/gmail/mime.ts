@@ -84,37 +84,65 @@ export function parseAddress(value: string): { name: string; email: string } {
   return { name: value.trim(), email: value.trim() };
 }
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<(style|script)[\s\S]*?<\/\1>/gi, '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|tr|li|h\d)>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+const ENTITIES: Record<string, string> = {
+  nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", copy: '©', reg: '®', trade: '™',
+  hellip: '…', mdash: '—', ndash: '–', lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', bull: '•',
+  middot: '·', euro: '€', pound: '£', yen: '¥', laquo: '«', raquo: '»', zwnj: '', zwj: '', shy: '',
+};
+
+/** Decodes named and numeric HTML entities. */
+export function decodeEntities(text: string): string {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, code: string) => {
+    if (code[0] === '#') {
+      const n = code[1] === 'x' || code[1] === 'X' ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
+      return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : '';
+    }
+    return ENTITIES[code.toLowerCase()] ?? match;
+  });
+}
+
+// Marketing emails pad their preview text with invisible characters.
+const INVISIBLE = /[\u00AD\u034F\u061C\u180E\u200B-\u200F\u2028-\u202E\u2060-\u2064\uFEFF]/g;
+
+/** Turns an HTML email into readable plain text. */
+export function htmlToText(html: string): string {
+  return decodeEntities(
+    html
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<(head|style|script|title)[\s\S]*?<\/\1>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<li[^>]*>/gi, '\n• ')
+      .replace(/<\/(p|div|tr|h\d|table|ul|ol|blockquote)>/gi, '\n')
+      .replace(/<[^>]+>/g, ''),
+  )
+    .replace(INVISIBLE, '')
+    .replace(/[ \t\u00A0]+/g, ' ')
+    .replace(/ *\n */g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function findPart(p: GmailPart, type: string): string | undefined {
+  if (p.mimeType === type && p.body?.data) return base64UrlDecode(p.body.data);
+  for (const child of p.parts ?? []) {
+    const hit = findPart(child, type);
+    if (hit !== undefined) return hit;
+  }
+  return undefined;
 }
 
 /** Returns the readable text of a message, preferring text/plain over HTML. */
 export function extractBody(part: GmailPart | undefined): string {
   if (!part) return '';
-  const find = (p: GmailPart, type: string): string | undefined => {
-    if (p.mimeType === type && p.body?.data) return base64UrlDecode(p.body.data);
-    for (const child of p.parts ?? []) {
-      const hit = find(child, type);
-      if (hit !== undefined) return hit;
-    }
-    return undefined;
-  };
-  const plain = find(part, 'text/plain');
-  if (plain !== undefined) return plain.trim();
-  const html = find(part, 'text/html');
-  return html !== undefined ? stripHtml(html) : '';
+  const plain = findPart(part, 'text/plain');
+  if (plain !== undefined && plain.trim()) return plain.replace(INVISIBLE, '').trim();
+  const html = findPart(part, 'text/html');
+  return html !== undefined ? htmlToText(html) : '';
+}
+
+/** Returns the HTML version of a message, if it has one. */
+export function extractHtml(part: GmailPart | undefined): string | undefined {
+  return part ? findPart(part, 'text/html') : undefined;
 }
 
 export function extractAttachments(part: GmailPart | undefined): { filename: string; size: number }[] {

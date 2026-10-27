@@ -3,9 +3,9 @@ import { Platform, Text } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useMail } from '../state/mail';
+import { useColors } from '../state/settings';
 import { GMAIL_SCOPES, googleClientIds, isDesktop, platformClientId, webRedirectUri } from '../lib/config';
 import { desktopSignIn } from '../lib/desktopAuth';
-import { colors } from '../theme';
 import { Button } from './ui';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -14,16 +14,18 @@ type Props = { variant?: 'primary' | 'dark' | 'outline'; label?: string; loginHi
 
 /** Opens Google sign-in and adds the chosen Gmail account. */
 export function AddAccountButton(props: Props) {
+  const c = useColors();
   // The Google hook throws without a client ID for this platform, so only
   // mount it when one is configured.
   if (!platformClientId) {
-    return <Text style={{ color: colors.muted, fontSize: 13 }}>Google sign-in is not set up yet. See README, “Set up Google sign-in”.</Text>;
+    return <Text style={{ color: c.muted, fontSize: 13 }}>Google sign-in is not set up yet. See README, “Set up Google sign-in”.</Text>;
   }
   return isDesktop ? <DesktopButton {...props} /> : <GoogleButton {...props} />;
 }
 
 function DesktopButton({ variant = 'outline', label = 'Add Gmail account', loginHint, onAdded }: Props) {
   const { addGoogleAccount } = useMail();
+  const c = useColors();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
@@ -43,13 +45,14 @@ function DesktopButton({ variant = 'outline', label = 'Add Gmail account', login
             .finally(() => setBusy(false));
         }}
       />
-      {error ? <Text style={{ color: colors.danger, fontSize: 13 }}>{error}</Text> : null}
+      {error ? <Text style={{ color: c.danger, fontSize: 13 }}>{error}</Text> : null}
     </>
   );
 }
 
 function GoogleButton({ variant = 'outline', label = 'Add Gmail account', loginHint, onAdded }: Props) {
   const { addGoogleAccount } = useMail();
+  const c = useColors();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -97,7 +100,7 @@ function GoogleButton({ variant = 'outline', label = 'Add Gmail account', loginH
           promptAsync().catch(() => setBusy(false));
         }}
       />
-      {error ? <Text style={{ color: colors.danger, fontSize: 13 }}>{error}</Text> : null}
+      {error ? <Text style={{ color: c.danger, fontSize: 13 }}>{error}</Text> : null}
     </>
   );
 }

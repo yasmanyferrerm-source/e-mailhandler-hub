@@ -1,5 +1,5 @@
 import type { MailDetail, MailSummary, OutgoingMail } from '../types';
-import { buildRawMessage, extractAttachments, extractBody, toSummary, type GmailMessage } from './mime';
+import { buildRawMessage, extractAttachments, extractBody, extractHtml, toSummary, type GmailMessage } from './mime';
 
 const BASE = 'https://gmail.googleapis.com/gmail/v1/users/me';
 
@@ -59,6 +59,7 @@ export class GmailSource implements MailSource {
     return {
       ...toSummary(msg, this.accountId),
       bodyText: extractBody(msg.payload),
+      bodyHtml: extractHtml(msg.payload),
       attachments: extractAttachments(msg.payload),
     };
   }

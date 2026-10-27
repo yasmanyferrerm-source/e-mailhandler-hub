@@ -34,6 +34,8 @@ export type MailSummary = {
 
 export type MailDetail = MailSummary & {
   bodyText: string;
+  /** The HTML part, when the email has one. */
+  bodyHtml?: string;
   attachments: { filename: string; size: number }[];
 };
 
