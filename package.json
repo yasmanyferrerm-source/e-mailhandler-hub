@@ -41,7 +41,8 @@
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/**/*.test.ts"
+    "test": "node --test src/**/*.test.ts",
+    "tauri": "tauri"
   },
   "private": true
 }
