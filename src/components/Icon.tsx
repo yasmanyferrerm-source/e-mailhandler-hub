@@ -2,7 +2,7 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 export type IconName =
   | 'mail' | 'plus' | 'search' | 'archive' | 'trash' | 'back' | 'send' | 'pen' | 'sparkle'
-  | 'refresh' | 'dot' | 'unread' | 'reply' | 'close' | 'users' | 'paperclip';
+  | 'refresh' | 'dot' | 'unread' | 'reply' | 'close' | 'users' | 'paperclip' | 'settings' | 'check';
 
 const paths: Record<IconName, (c: string) => React.ReactNode> = {
   mail: () => (<><Rect x="3" y="5" width="18" height="14" rx="3" /><Path d="M4 7l8 6 8-6" /></>),
@@ -20,6 +20,8 @@ const paths: Record<IconName, (c: string) => React.ReactNode> = {
   reply: () => <Path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 5 5v6" />,
   close: () => <Path d="M6 6l12 12M18 6L6 18" />,
   users: () => (<><Circle cx="9" cy="8" r="4" /><Path d="M2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 9M22 21a7 7 0 0 0-4-6.3" /></>),
+  settings: () => (<><Circle cx="12" cy="12" r="3" /><Path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>),
+  check: () => <Path d="M5 12.5l4.5 4.5L19 7.5" />,
   paperclip: () => <Path d="M21 11l-9 9a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8" />,
 };
 

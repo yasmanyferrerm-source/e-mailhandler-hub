@@ -1,7 +1,8 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useMail } from '../state/mail';
-import { colors, font, VIEW_META } from '../theme';
+import { useStyles } from '../state/settings';
+import { font, VIEW_META, type Palette } from '../theme';
 import type { SmartView } from '../types';
 import { AccountBadge, Button, SectionLabel } from './ui';
 import type { WebPressState } from './ui';
@@ -14,13 +15,14 @@ function NavItem({ active, onPress, children, label }: {
   children: React.ReactNode;
   label: string;
 }) {
+  const styles = useStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      style={({ hovered }: WebPressState) => [styles.item, active && styles.itemActive, hovered && !active && { backgroundColor: colors.bg }]}
+      style={({ hovered }: WebPressState) => [styles.item, active && styles.itemActive, hovered && !active && styles.itemHover]}
     >
       {children}
     </Pressable>
@@ -31,11 +33,12 @@ export function Sidebar() {
   const { accounts, expired, filter, setFilter, view, setView, unreadByAccount, viewCounts } = useMail();
   const total = Object.values(unreadByAccount).reduce((a, b) => a + b, 0);
   const hasDemo = accounts.some((a) => a.demo);
+  const styles = useStyles(makeStyles);
 
   return (
     <ScrollView style={styles.wrap} contentContainerStyle={styles.content}>
       <View style={styles.brand}>
-        <View style={styles.logo}><Icon name="mail" size={18} color="#FFFFFF" strokeWidth={2.2} /></View>
+        <View style={styles.logo}><Icon name="mail" size={18} color={styles.logoIcon.color} strokeWidth={2.2} /></View>
         <Text style={styles.brandText}>Mail Hub</Text>
       </View>
 
@@ -63,6 +66,7 @@ export function Sidebar() {
         <View style={{ marginTop: 8, gap: 6 }}>
           <AddAccountButton label={hasDemo ? 'Connect real Gmail' : 'Add Gmail account'} />
           <Button small label="Manage accounts" icon="users" onPress={() => router.push('/accounts')} />
+          <Button small label="Settings" icon="settings" onPress={() => router.push('/settings')} />
         </View>
       </View>
 
@@ -80,19 +84,21 @@ export function Sidebar() {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { width: 260, flexGrow: 0, flexShrink: 0, backgroundColor: colors.surface, borderRightWidth: 1, borderRightColor: colors.line },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  wrap: { width: 260, flexGrow: 0, flexShrink: 0, backgroundColor: c.surface, borderRightWidth: 1, borderRightColor: c.line },
   content: { padding: 14, paddingTop: 20, gap: 22 },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 8 },
-  logo: { width: 34, height: 34, borderRadius: 10, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  brandText: { fontSize: 18, letterSpacing: -0.3, color: colors.ink, ...font.heavy },
+  logo: { width: 34, height: 34, borderRadius: 10, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
+  logoIcon: { color: c.onAccent },
+  brandText: { fontSize: 18, letterSpacing: -0.3, color: c.ink, ...font.heavy },
   group: { gap: 2 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, paddingHorizontal: 10, borderRadius: 10 },
-  itemActive: { backgroundColor: '#E6F5F2' },
-  itemText: { fontSize: 14, color: colors.ink, flexShrink: 1, ...font.medium },
-  itemTextActive: { color: colors.accentDeep, ...font.bold },
-  email: { fontSize: 11, color: colors.muted },
-  count: { marginLeft: 'auto', fontSize: 12, color: colors.muted, ...font.semibold },
+  itemActive: { backgroundColor: c.selected },
+  itemHover: { backgroundColor: c.bg },
+  itemText: { fontSize: 14, color: c.ink, flexShrink: 1, ...font.medium },
+  itemTextActive: { color: c.accentDeep, ...font.bold },
+  email: { fontSize: 11, color: c.muted },
+  count: { marginLeft: 'auto', fontSize: 12, color: c.muted, ...font.semibold },
   allBadge: { width: 22, height: 22, borderRadius: 7, overflow: 'hidden', flexDirection: 'row' },
   allSlice: { flex: 1 },
   viewDot: { width: 8, height: 8, borderRadius: 4 },

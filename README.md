@@ -7,6 +7,8 @@ One calm inbox for all your Gmail accounts, on the web, desktop (Mac, Windows, L
 - **Catch-up card.** A one-line summary of what's waiting, with one tap to start with people or archive every newsletter.
 - **Replies from the right account.** Quick replies and full replies always go out from the address the email was sent to.
 - **Private by design.** The app talks straight to Gmail. Sign-in tokens stay on the device (Keychain/Keystore on mobile, browser storage on web and desktop), and there is no server of ours in between.
+- **Themes and settings.** Automatic, Light, Soft (less glare) and Dark themes, a bigger or smaller email text size, and a switch to block pictures in emails. Settings are saved on the device.
+- **Emails look like they should.** On web and desktop, emails show their original layout in a locked-down frame where scripts never run, with one tap to switch to simple text. Phones show simple text for now.
 - **Demo mode.** "Try it with sample mail" runs the whole app with three sample accounts, so you can try it before setting up Google sign-in.
 
 ## Stack
@@ -99,6 +101,7 @@ Client IDs are not secrets, but `.env` is git-ignored anyway. The one exception 
 
 ## Roadmap
 
+- Original email formatting on iPhone and Android
 - Swipe to archive or snooze on mobile
 - Snooze and reminders
 - Thread view (whole conversation instead of single messages)

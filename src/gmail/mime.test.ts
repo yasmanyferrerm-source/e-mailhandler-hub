@@ -7,6 +7,8 @@ import {
   buildRawMessage,
   classify,
   extractBody,
+  extractHtml,
+  htmlToText,
   parseAddress,
   replySubject,
   toSummary,
@@ -41,6 +43,25 @@ test('extractBody prefers text/plain and falls back to stripped HTML', () => {
     ],
   };
   assert.equal(extractBody(multipart), 'Plain version');
+});
+
+test('htmlToText cleans up marketing HTML', () => {
+  const html = '<html><head><title>Sale</title></head><body><!-- x --><div>It&#8217;s here&nbsp;&#x1F389;</div>'
+    + '<span>&zwnj;\u200c\u034f&nbsp;</span><ul><li>One</li><li>Two</li></ul><p>&copy; Shop &amp; Co</p></body></html>';
+  assert.equal(htmlToText(html), 'It’s here 🎉\n\n• One\n• Two\n© Shop & Co');
+});
+
+test('extractHtml finds the HTML part and extractBody skips empty plain text', () => {
+  const multipart = {
+    mimeType: 'multipart/alternative',
+    parts: [
+      { mimeType: 'text/plain', body: { data: base64UrlEncode('  ') } },
+      { mimeType: 'text/html', body: { data: base64UrlEncode('<b>Hello</b>') } },
+    ],
+  };
+  assert.equal(extractHtml(multipart), '<b>Hello</b>');
+  assert.equal(extractBody(multipart), 'Hello');
+  assert.equal(extractHtml({ mimeType: 'text/plain', body: { data: base64UrlEncode('x') } }), undefined);
 });
 
 test('classify sorts mail into smart views', () => {

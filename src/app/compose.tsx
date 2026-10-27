@@ -3,7 +3,8 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMail } from '../state/mail';
-import { colors, font, radius } from '../theme';
+import { useColors, useStyles } from '../state/settings';
+import { font, radius, type Palette } from '../theme';
 import { Button, Chip, IconButton } from '../components/ui';
 
 export default function Compose() {
@@ -14,6 +15,8 @@ export default function Compose() {
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const styles = useStyles(makeStyles);
+  const c = useColors();
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
   const valid = !!from && /\S+@\S+\.\S+/.test(to) && body.trim().length > 0;
 
@@ -31,7 +34,7 @@ export default function Compose() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
         <View style={styles.head}>
           <Text style={styles.title}>New email</Text>
@@ -45,11 +48,11 @@ export default function Compose() {
           ))}
         </View>
 
-        <TextInput value={to} onChangeText={setTo} placeholder="To" placeholderTextColor={colors.muted} accessibilityLabel="To"
+        <TextInput value={to} onChangeText={setTo} placeholder="To" placeholderTextColor={c.muted} accessibilityLabel="To"
           autoCapitalize="none" keyboardType="email-address" autoComplete="email" style={styles.input} />
-        <TextInput value={subject} onChangeText={setSubject} placeholder="Subject" placeholderTextColor={colors.muted}
+        <TextInput value={subject} onChangeText={setSubject} placeholder="Subject" placeholderTextColor={c.muted}
           accessibilityLabel="Subject" style={styles.input} />
-        <TextInput value={body} onChangeText={setBody} placeholder="Write your message" placeholderTextColor={colors.muted}
+        <TextInput value={body} onChangeText={setBody} placeholder="Write your message" placeholderTextColor={c.muted}
           accessibilityLabel="Message" multiline style={[styles.input, styles.body]} />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -65,14 +68,14 @@ export default function Compose() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   wrap: { padding: 20, gap: 14, maxWidth: 720, width: '100%', alignSelf: 'center' },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 24, letterSpacing: -0.4, color: colors.ink, ...font.heavy },
-  label: { fontSize: 12, color: colors.muted, ...font.bold },
+  title: { fontSize: 24, letterSpacing: -0.4, color: c.ink, ...font.heavy },
+  label: { fontSize: 12, color: c.muted, ...font.bold },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  input: { minHeight: 48, paddingHorizontal: 14, paddingVertical: 12, borderRadius: radius.md, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, fontSize: 15, color: colors.ink },
+  input: { minHeight: 48, paddingHorizontal: 14, paddingVertical: 12, borderRadius: radius.md, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface, fontSize: 15, color: c.ink },
   body: { minHeight: 220, textAlignVertical: 'top' },
-  error: { color: colors.danger, fontSize: 13, ...font.semibold },
-  note: { color: colors.muted, fontSize: 13 },
+  error: { color: c.danger, fontSize: 13, ...font.semibold },
+  note: { color: c.muted, fontSize: 13 },
 });

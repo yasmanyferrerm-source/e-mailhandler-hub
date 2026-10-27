@@ -1,6 +1,7 @@
 import { Pressable, type PressableStateCallbackType, StyleSheet, Text, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
-import { colors, font, radius } from '../theme';
+import { font, radius, type Palette } from '../theme';
 import { initials } from '../lib/format';
+import { useStyles } from '../state/settings';
 import { Icon, type IconName } from './Icon';
 
 /** react-native-web adds `hovered` to Pressable's style callback state. */
@@ -15,7 +16,8 @@ type ButtonProps = Omit<PressableProps, 'style'> & {
 };
 
 export function Button({ label, icon, variant = 'outline', small, style, ...rest }: ButtonProps) {
-  const v = variants[variant];
+  const styles = useStyles(makeStyles);
+  const v = useStyles(makeVariants)[variant];
   return (
     <Pressable
       accessibilityRole="button"
@@ -35,13 +37,14 @@ export function Button({ label, icon, variant = 'outline', small, style, ...rest
   );
 }
 
-export function IconButton({ icon, label, onPress, color = colors.ink, style }: {
+export function IconButton({ icon, label, onPress, color, style }: {
   icon: IconName;
   label: string;
   onPress?: () => void;
   color?: string;
   style?: StyleProp<ViewStyle>;
 }) {
+  const styles = useStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -49,12 +52,13 @@ export function IconButton({ icon, label, onPress, color = colors.ink, style }: 
       onPress={onPress}
       style={({ pressed }) => [styles.iconBtn, pressed && { opacity: 0.7 }, style]}
     >
-      <Icon name={icon} size={18} color={color} />
+      <Icon name={icon} size={18} color={color ?? styles.iconColor.color} />
     </Pressable>
   );
 }
 
 export function Avatar({ name, color, size = 40 }: { name: string; color?: string; size?: number }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={{ width: size, height: size }}>
       <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
@@ -66,6 +70,7 @@ export function Avatar({ name, color, size = 40 }: { name: string; color?: strin
 }
 
 export function AccountBadge({ label, color, size = 22 }: { label: string; color: string; size?: number }) {
+  const styles = useStyles(makeStyles);
   return (
     <View style={[styles.badge, { width: size, height: size, borderRadius: size * 0.32, backgroundColor: color }]}>
       <Text style={[styles.badgeText, { fontSize: size * 0.5 }]}>{label[0]?.toUpperCase()}</Text>
@@ -79,6 +84,7 @@ export function Chip({ label, active, color, onPress }: {
   color?: string;
   onPress?: () => void;
 }) {
+  const styles = useStyles(makeStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -87,24 +93,26 @@ export function Chip({ label, active, color, onPress }: {
       style={[styles.chip, active ? styles.chipActive : null]}
     >
       {color ? <View style={[styles.chipDot, { backgroundColor: color }]} /> : null}
-      <Text style={[styles.chipText, active && { color: '#FFFFFF' }]}>{label}</Text>
+      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
     </Pressable>
   );
 }
 
 export function SectionLabel({ children }: { children: string }) {
+  const styles = useStyles(makeStyles);
   return <Text style={styles.section}>{children}</Text>;
 }
 
-const variants = {
-  primary: { box: { backgroundColor: colors.accent, borderColor: colors.accent }, text: { color: '#FFFFFF' } },
-  dark: { box: { backgroundColor: colors.night, borderColor: colors.night }, text: { color: '#FFFFFF' } },
-  outline: { box: { backgroundColor: colors.surface, borderColor: colors.line }, text: { color: colors.ink } },
-  soft: { box: { backgroundColor: colors.accentSoft, borderColor: colors.accentLine }, text: { color: colors.accentDeep } },
-  ghost: { box: { backgroundColor: 'transparent', borderColor: '#3A404C' }, text: { color: '#FFFFFF' } },
-};
+const makeVariants = (c: Palette) => ({
+  primary: { box: { backgroundColor: c.accent, borderColor: c.accent }, text: { color: c.onAccent } },
+  dark: { box: { backgroundColor: c.inverse, borderColor: c.inverse }, text: { color: c.onInverse } },
+  outline: { box: { backgroundColor: c.surface, borderColor: c.line }, text: { color: c.ink } },
+  soft: { box: { backgroundColor: c.accentSoft, borderColor: c.accentLine }, text: { color: c.accentDeep } },
+  // Sits on the catch-up card, which stays dark in every theme.
+  ghost: { box: { backgroundColor: 'transparent', borderColor: c.nightLine }, text: { color: '#FFFFFF' } },
+});
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   btn: {
     minHeight: 44,
     paddingHorizontal: 16,
@@ -122,13 +130,13 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
+    borderColor: c.line,
+    backgroundColor: c.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatar: { backgroundColor: colors.chip, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: colors.ink, ...font.bold },
+  avatar: { backgroundColor: c.chip, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: c.ink, ...font.bold },
   avatarDot: {
     position: 'absolute',
     right: -2,
@@ -137,10 +145,11 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: c.surface,
   },
   badge: { alignItems: 'center', justifyContent: 'center' },
   badgeText: { color: '#FFFFFF', ...font.heavy },
+  iconColor: { color: c.ink },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -149,17 +158,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.surface,
+    borderColor: c.line,
+    backgroundColor: c.surface,
   },
-  chipActive: { backgroundColor: colors.night, borderColor: colors.night },
+  chipActive: { backgroundColor: c.inverse, borderColor: c.inverse },
+  chipTextActive: { color: c.onInverse },
   chipDot: { width: 8, height: 8, borderRadius: 4 },
-  chipText: { fontSize: 13, color: colors.ink, ...font.semibold },
+  chipText: { fontSize: 13, color: c.ink, ...font.semibold },
   section: {
     fontSize: 11,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: colors.muted,
+    color: c.muted,
     paddingHorizontal: 10,
     paddingBottom: 6,
     ...font.bold,
