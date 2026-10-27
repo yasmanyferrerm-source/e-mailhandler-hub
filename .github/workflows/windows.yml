@@ -1,0 +1,40 @@
+name: Windows app
+
+# Builds the Windows installer and publishes it as a GitHub release.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-release
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPO_PUBLIC_GOOGLE_DESKTOP_CLIENT_ID: ${{ vars.GOOGLE_DESKTOP_CLIENT_ID }}
+          EXPO_PUBLIC_GOOGLE_DESKTOP_CLIENT_SECRET: ${{ secrets.GOOGLE_DESKTOP_CLIENT_SECRET }}
+        with:
+          tagName: windows-build-${{ github.run_number }}
+          releaseName: Mail Hub for Windows (build ${{ github.run_number }})
+          releaseBody: Download the `.exe` (or `.msi`) installer below and open it. If Windows says it protected your PC, click **More info**, then **Run anyway**. The installer is not code-signed yet.
+          releaseDraft: false
+          prerelease: false

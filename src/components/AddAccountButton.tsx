@@ -3,7 +3,7 @@ import { Text } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useMail } from '../state/mail';
-import { GMAIL_SCOPES, googleClientIds, isDesktop, platformClientId } from '../lib/config';
+import { GMAIL_SCOPES, googleClientIds, isDesktop, platformClientId, webRedirectUri } from '../lib/config';
 import { desktopSignIn } from '../lib/desktopAuth';
 import { colors } from '../theme';
 import { Button } from './ui';
@@ -57,6 +57,7 @@ function GoogleButton({ variant = 'outline', label = 'Add Gmail account', loginH
     scopes: GMAIL_SCOPES,
     selectAccount: true,
     loginHint,
+    redirectUri: webRedirectUri(),
     extraParams: { access_type: 'offline', include_granted_scopes: 'true' },
   });
 
