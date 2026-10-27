@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text } from 'react-native';
+import { Platform, Text } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useMail } from '../state/mail';
@@ -58,7 +58,12 @@ function GoogleButton({ variant = 'outline', label = 'Add Gmail account', loginH
     selectAccount: true,
     loginHint,
     redirectUri: webRedirectUri(),
-    extraParams: { access_type: 'offline', include_granted_scopes: 'true' },
+    // Web uses Google's token flow, which rejects access_type=offline (and has
+    // no refresh tokens anyway). Only the phone apps' code flow can ask for it.
+    extraParams: {
+      include_granted_scopes: 'true',
+      ...(Platform.OS === 'web' ? {} : { access_type: 'offline' }),
+    },
   });
 
   useEffect(() => {
