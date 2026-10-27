@@ -3,7 +3,8 @@ import { Text } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useMail } from '../state/mail';
-import { GMAIL_SCOPES, googleClientIds, platformClientId } from '../lib/config';
+import { GMAIL_SCOPES, googleClientIds, isDesktop, platformClientId } from '../lib/config';
+import { desktopSignIn } from '../lib/desktopAuth';
 import { colors } from '../theme';
 import { Button } from './ui';
 
@@ -18,7 +19,33 @@ export function AddAccountButton(props: Props) {
   if (!platformClientId) {
     return <Text style={{ color: colors.muted, fontSize: 13 }}>Google sign-in is not set up yet. See README, “Set up Google sign-in”.</Text>;
   }
-  return <GoogleButton {...props} />;
+  return isDesktop ? <DesktopButton {...props} /> : <GoogleButton {...props} />;
+}
+
+function DesktopButton({ variant = 'outline', label = 'Add Gmail account', loginHint, onAdded }: Props) {
+  const { addGoogleAccount } = useMail();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <>
+      <Button
+        icon="plus"
+        variant={variant}
+        label={busy ? 'Finish signing in in your browser…' : label}
+        disabled={busy}
+        onPress={() => {
+          setError(null);
+          setBusy(true);
+          desktopSignIn(loginHint)
+            .then(addGoogleAccount)
+            .then(() => onAdded?.())
+            .catch((e: Error) => setError(e.message))
+            .finally(() => setBusy(false));
+        }}
+      />
+      {error ? <Text style={{ color: colors.danger, fontSize: 13 }}>{error}</Text> : null}
+    </>
+  );
 }
 
 function GoogleButton({ variant = 'outline', label = 'Add Gmail account', loginHint, onAdded }: Props) {
