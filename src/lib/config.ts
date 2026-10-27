@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 export const googleClientIds = {
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || undefined,
@@ -26,6 +27,17 @@ export const platformClientId = isDesktop
       android: googleClientIds.androidClientId,
       default: googleClientIds.webClientId,
     });
+
+/**
+ * Where Google sends the browser back to on web. Defaults to the bare origin,
+ * which is wrong when the app lives under a sub-path (GitHub Pages), so add
+ * the base URL. Register exactly this value as a redirect URI in Google Cloud.
+ */
+export function webRedirectUri(): string | undefined {
+  if (Platform.OS !== 'web' || isDesktop || typeof window === 'undefined') return undefined;
+  const base = Constants.expoConfig?.experiments?.baseUrl?.replace(/\/$/, '');
+  return base ? `${window.location.origin}${base}/` : window.location.origin;
+}
 
 export const GMAIL_SCOPES = [
   'openid',

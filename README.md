@@ -27,7 +27,24 @@ src/
 src-tauri/        desktop shell
 ```
 
-## Run it
+## Use it without installing anything
+
+GitHub builds the app for you on every push to `main`:
+
+- **Web:** https://yasmanyferrerm-source.github.io/e-mailhandler-hub/ (workflow `Web app`)
+- **Windows:** the latest installer is on the [Releases page](../../releases) (workflow `Windows app`). Windows may say it protected your PC because the installer isn't code-signed yet: click **More info**, then **Run anyway**.
+
+To connect real Gmail there, add your Google keys (see the next section) under **Settings → Secrets and variables → Actions** in this repo:
+
+| Where | Name | Value |
+| --- | --- | --- |
+| Variables tab | `GOOGLE_WEB_CLIENT_ID` | Web application client ID |
+| Variables tab | `GOOGLE_DESKTOP_CLIENT_ID` | Desktop app client ID |
+| Secrets tab | `GOOGLE_DESKTOP_CLIENT_SECRET` | Desktop app client secret |
+
+Then re-run both workflows from the **Actions** tab (**Run workflow**). For the web version, also add `https://yasmanyferrerm-source.github.io` as an authorized JavaScript origin and `https://yasmanyferrerm-source.github.io/e-mailhandler-hub/` (with the trailing slash) as an authorized redirect URI on the Web client.
+
+## Run it on your computer
 
 ```bash
 npm install
